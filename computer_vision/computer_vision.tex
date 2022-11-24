@@ -1,0 +1,372 @@
+\documentclass[11pt,english]{article}
+\usepackage[a4paper,
+            bindingoffset=0.2in,
+            left=0.5in,
+            right=0.5in,
+            top=0.5in,
+            bottom=0.5in,
+            footskip=.25in]{geometry}
+\usepackage[utf8]{inputenc}
+\usepackage{textcomp} % arrow command
+
+\usepackage{titlesec} % to make section bigger
+\titleformat*{\section}{\fontsize{14}{12}\selectfont\bfseries}
+
+\usepackage{etoolbox} % to make title bigger
+\makeatletter
+\patchcmd{\@maketitle}{\LARGE}{\Huge}{\typeout{OK 1}}{\typeout{Failed 1}}
+\patchcmd{\@maketitle}{\large \lineskip}{\Large \lineskip}{\typeout{OK 2}}{\typeout{Failed 2}}
+\makeatother
+
+\title:
+\title{\vspace{-1.6cm}\textbf{Computer Vision - Notes}}
+\author{Marco Mustacchi}
+\date{}
+
+\begin{document}
+
+\maketitle
+
+\section{OPENCV}
+
+Preprocessor: source file \makebox[0.5cm]{\textrightarrow} code edited \\
+Compiler: code edited \makebox[0.5cm]{\textrightarrow} object file \\
+Linker: object file \makebox[0.5cm]{\makebox[0.5cm]{\textrightarrow}} executable \\
+
+\medskip
+
+Dynamic libraries \par
+    \makebox[1.5cm]{\textrightarrow}  save disk space (one installation serves all)\par
+    \makebox[1.5cm]{\textrightarrow}  can be recompiled without touching the executables\par
+    \makebox[1.5cm]{\textrightarrow}  SO (Shared Object) under Linux, DLL (Dynamic Linking Library) under Windows\par
+
+Static libraries \par
+    \makebox[1.5cm]{\textrightarrow}  generate execs that can't be broken at a later stage\par
+    \makebox[1.5cm]{\textrightarrow}  self-contained\\
+\\
+standard library \\
+Standard Template Library (STL) \par
+    \makebox[1.5cm]{\textrightarrow}  a special section of the standard library\par
+    \makebox[1.5cm]{\textrightarrow}  based on the concept of template\\
+\\
+OpenCV library \\
+OpenCV depends on other libraries \makebox[0.5cm]{\textrightarrow} not self-contained \\
+Header of OpenCV files \makebox[0.5cm]{\textrightarrow} .hpp extension \\
+\\
+cv::Mat \makebox[0.5cm]{\textrightarrow} elements accessed using img.at<>(i,j) \\
+cv::Vec \par
+    \makebox[1.5cm]{\textrightarrow}  elements accessed using [] \par
+    \makebox[1.5cm]{\textrightarrow}  class used for dealing with tuples\par
+    \makebox[1.5cm]{\textrightarrow}  used to describe the triplet of color pixels img.at<Vec3b>(i,j)[0]\par
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{IMAGE PROCESSING}
+	
+\subsection{IMAGE CODING}						
+coordinate system (c,r) \\ 
+\\
+Spatial resolution \makebox[0.5cm]{\textrightarrow} \verb|#| of pixels per unit distance \makebox[0.5cm]{\textrightarrow} smallest detectable detail in the image \\
+Depth \makebox[0.5cm]{\textrightarrow} \verb|#| bits per pixel \\
+Gray-level/intensity resolution \makebox[0.5cm]{\textrightarrow} \verb|#| bits per pixel \makebox[0.5cm]{\textrightarrow} smallest detectable change in gray level \\
+Contrast \makebox[0.5cm]{\textrightarrow} difference between highest and lowest intensity value in the image \\
+
+\subsection{TRANSFORMING AN IMAGE}
+
+\subsubsection*{GEOMETRIC TRANSFORMATIONS}
+
+Two steps: 
+\begin{enumerate}
+    \item coordinate transform \makebox[0.5cm]{\textrightarrow} works on geometrical points
+    \item image resampling \makebox[0.5cm]{\textrightarrow} works on pixels
+\end{enumerate}
+
+difference between forward e backward mapping
+
+\medskip
+
+Affine transform \\
+Preserves \makebox[0.5cm]{\textrightarrow} point collinearity
+	  \makebox[0.5cm]{\textrightarrow} distance ratios along a line
+
+\subsubsection*{SINGLE PIXEL OPERATIONS}
+
+functions that change the gray levels of an image \\
+examples: \par
+    \makebox[1.5cm]{}  Negative\par
+    \makebox[1.5cm]{}  Logarithm \makebox[0.5cm]{\textrightarrow} if underexposed \par
+    \makebox[1.5cm]{} Gamma (tunable): \makebox[0.5cm]{\textrightarrow} gamma<1 if underexposed, \makebox[0.5cm]{\textrightarrow} gamma>1 if overexposed \par
+\medskip
+Measurements for contrast: RMS/RMSC
+
+\medskip
+
+Slicing \par
+    \makebox[1.5cm]{\textrightarrow}  enables to consider only a subset of the given image
+	intensity slicing\par
+    \makebox[1.5cm]{\textrightarrow}  Logarithm \makebox[0.5cm]{\textrightarrow} intensity slicing \par
+    \makebox[1.5cm]{\textrightarrow} bit plane slicing \par
+[see graphs for: constrast strecthing, thresholding, intensity slicing x2]
+
+\subsection{HISTOGRAM}
+The CDF (cumulative distribution function) is the T(r) trasformation used to equalize the histogram \\
+Output not perfectly flat (caused by the discrete nature of data)
+\begin{enumerate}
+    \item Histogram equalization
+    \item Local histogram equalization
+    \item Histogram specification \par
+    \makebox[1.5cm]{\textrightarrow}  define the desired probability density function\par
+    \makebox[1.5cm]{\textrightarrow} evaluate\par
+\end{enumerate}
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FILTERING}
+
+In general, the bigger the filter, the higher the smoothing (or in general the effect)
+
+\medskip
+
+Image restoration \makebox[0.5cm]{\textrightarrow} based on \makebox[0.5cm]{\textrightarrow} averaging
+			      \makebox[0.5cm]{\textrightarrow} Gaussian filter
+			      \makebox[0.5cm]{\textrightarrow} Median filter
+[slides 101: Vedere differenza tra sobel mask e laplacian-derived mask, both cases non isotropic (4 directions available)]
+(in teoria laplacian isotropic + double line effect, in pratica implementando con mask e' anisotropic)
+
+\medskip
+
+The filter weights can change the image brightness, if sum(wi)=1 unchanged, if sum(wi)<1 brightness decreased, if sum(wi)>1 brightness increased
+
+\medskip
+
+In general: 
+Average filter \makebox[0.5cm]{\textrightarrow} smoothing
+Derivative filter \makebox[0.5cm]{\textrightarrow} sharpening (affilamento) \\
+ + Derivative filters highlights edges int the image
+
+\medskip
+
+Gaussian filter \par
+    \makebox[1.5cm]{\textrightarrow} spatial filter (the weight assigned to each pixel depends on how far it is from the central one)\par
+    \makebox[1.5cm]{\textrightarrow} takes only spatial distance into account\par
+    \makebox[1.5cm]{\textrightarrow} Kernel is everywhere the same\par
+    \makebox[1.5cm]{\textrightarrow} losing edge information\par
+
+Bilateral filter \par
+    \makebox[1.5cm]{\textrightarrow} consider not only spatial distance, but also color distance\par
+    \makebox[1.5cm]{\textrightarrow} non-linear filter\par
+    \makebox[1.5cm]{\textrightarrow} Kernel is not everywhere the same\par
+    \makebox[1.5cm]{\textrightarrow} edge preserving\par
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{IMAGES IN FREQUENCY}
+							
+Aliasing caused by Undersampling \par
+    \makebox[1.5cm]{\textrightarrow} artifacts\par
+    \makebox[1.5cm]{\textrightarrow} {\textrightarrow} can be compensated by means of a Low Pass Filter\par
+
+The DFT of an image can be decomposed into \par
+    \makebox[1.5cm]{\textrightarrow} Spectrum\par
+    \makebox[1.5cm]{\textrightarrow} Phase \\
+\\
+Translation \makebox[0.5cm]{\textrightarrow} does not affect the spectrum \\
+Rotation \makebox[0.5cm]{\textrightarrow} affects the spectrum
+\medskip
+Filtering in frequency \\
+Low pass filter  \makebox[0.5cm]{\textrightarrow} Smoothing (ringing effect is present) \par
+    \makebox[1.5cm]{\textrightarrow} Ideal \makebox[0.5cm]{\textrightarrow} cut-off frequency  \makebox[0.5cm]{\textrightarrow} ringing effect\par
+    \makebox[1.5cm]{\textrightarrow} Butterworth\par
+    \makebox[1.5cm]{\textrightarrow} Gaussian \\
+%
+High pass filter \makebox[0.5cm]{\textrightarrow} Sharpening (ringing is present as in lowpass filtering) \par
+    \makebox[1.5cm]{\textrightarrow} Ideal\par
+    \makebox[1.5cm]{\textrightarrow} Butterworth\par
+    \makebox[1.5cm]{\textrightarrow} Gaussian \\
+Band pass filter \\
+Band reject filter \makebox[0.5cm]{\textrightarrow} Notch filter
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{EDGE DETECTION}
+
+Gradient edge detector \par
+    \makebox[1.5cm]{\textrightarrow} gradient is a vector pointing towards the fastest varying direction ($\perp$ to the edge direction)\par
+    \makebox[1.5cm]{\textrightarrow} magnitude and phase are scalars\par
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{SEGMENTATION}
+
+Thresholding \makebox[0.5cm]{\textrightarrow} not connected regions \makebox[0.5cm]{\textrightarrow} discontinuity \\
+
+Region Growing\par
+    \makebox[1.5cm]{\textrightarrow} connected regions \makebox[0.5cm]{\textrightarrow} similarity \par
+    \makebox[1.5cm]{\textrightarrow} 3 elements: image, seed array, predicate \par
+
+Watershed\par
+    \makebox[1.5cm]{\textrightarrow} connected regions \makebox[0.5cm]{\textrightarrow} similarity\par
+    \makebox[1.5cm]{\textrightarrow} flood the surface from the minima\par
+\medskip
+Watershed: Questi bacini vengono allagati e vengono identificate le aree in cui le acque di piena dei diversi bacini si incontrano. (Morphological interpretation \makebox[0.5cm]{\textrightarrow} a set of subsequent dilations) \\
+In queste aree vengono costruite delle barriere sotto forma di pixel. \\
+Di conseguenza, queste barriere agiscono come partizioni nell'immagine e l'immagine viene considerata segmentata. \\
+\makebox[0.5cm]{\textrightarrow} Infatti se considero solo grayscale, le watershed lines possonono essere molto spesse, in questo modo ottengo solo delle lines \\
+\medskip
+Watershed on Gradient \makebox[0.5cm]{\textrightarrow} catchment basins correspond to homogeneous graylevel regions \makebox[0.5cm]{\textrightarrow} extract uniform regions (colore costante) \\
+\medskip
+Watershed with Markers\par
+    \makebox[1.5cm]{\textrightarrow} the number of markers determines the number of regions that will be created by the algorithm (evitare overfitting)\par
+    \makebox[1.5cm]{\textrightarrow} Internal markers:\par 
+\medskip
+Mean shift: Kernel density estimation\par
+    \makebox[1.5cm]{\textrightarrow} Kernel density gradient estimation\par
+    \makebox[1.5cm]{\textrightarrow} steepest ascend method\par
+\medskip
+Markov Random Fields (MRF) \\
+Segmentation as a per-pixel labelling task \\
+Assign a label to each pixel in order to minimize an energy function \\
+
+Energy function composed of two terms\par
+    \makebox[1.5cm]{\textrightarrow} Data term \makebox[0.5cm]{\textrightarrow} depends on specific feature at the pixel location\par
+    \makebox[1.5cm]{\textrightarrow} Smooth term \makebox[0.5cm]{\textrightarrow} depends on the labels in the neighboring pixels (commonly 4 neighbors considered)\par
+\medskip
+Active Contours: The primary use of active contours in image processing is to define smooth shapes in images and to construct closed contours for regions.
+
+\medskip
+
+The curvature of the models is determined using several contour techniques that employ external and internal forces.
+External energy is described as the sum of forces caused by the picture that is specifically used to
+control the location of the contour onto the image, and internal energy, which is used to govern deformable changes. \\
+Active snake models, often known as snakes, are generally configured by the use of spline
+
+\medskip
+
+\subsubsection*{ACTIVE CONTOUR MODEL}
+Contour is moving, \\
+scissors \makebox[0.5cm]{\textrightarrow} user input \\
+snakes \par
+    \makebox[1.5cm]{\textrightarrow} without any interaction with the user\par
+    \makebox[1.5cm]{\textrightarrow} energy balance \par
+    \makebox[2.5cm]{\textrightarrow} Internal energy \makebox[0.5cm]{\textrightarrow} keeps the snake in shape with the contour\par
+    \makebox[2.5cm]{\textrightarrow} External energy \makebox[0.5cm]{\textrightarrow} what inside the image attracts the snake, for instance strong edges\par
+		
+Internal energy: where alpha(s) and beta(s) are user-defined weights; these control the internal energy function's sensitivity to the amount of stretch in the snake and the amount of curvature in the snake,respectively, and thereby control the number of constraints on the shape of the snake.
+In practice, a large weight alpha(s) for the continuity term penalizes changes in distances between points in the contour. A large weight beta(s) for the smoothness term penalizes oscillations in the contour and will cause the contour to act as a thin plate.
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{FEATURES}
+							
+Feature detection (keypoint detection) \makebox[0.5cm]{\textrightarrow} find points easily recognizable \\
+Feature description \makebox[0.5cm]{\textrightarrow} describe a region around the keypoint to make matching easy \\
+Feature matching \makebox[0.5cm]{\textrightarrow} find similar descriptors in two images \\
+Feature tracking \makebox[0.5cm]{\textrightarrow} find similar descriptors in a neighborhood in the same image
+
+\medskip
+
+similarity is applied to the descriptor (not to the keypoint) using a distance!! 
+
+\subsubsection*{HARRIS CORNER}
+Consider a patch and a shifted version of the patch \\
+Similarity is measured by means of the autocorrelation (a weighted sum function of the displacement) \\
+Approximate this autocorrelation using the Taylor series (use of derivatives) \\
+Autocorrelation function is weighted, two main choices \par
+    \makebox[1.5cm]{\textrightarrow} Box (1 inside the patch, 0 elsewhere)\par
+    \makebox[1.5cm]{\textrightarrow} Gaussian\par
+Study of the eigenvectors and eigenvalues \par
+    \makebox[1.5cm]{\textrightarrow} two small eigenvalues \makebox[0.5cm]{\textrightarrow} flat region\par
+    \makebox[1.5cm]{\textrightarrow} one large and one small \makebox[0.5cm]{\textrightarrow} edge\par
+    \makebox[1.5cm]{\textrightarrow} two large eigenvalues \makebox[0.5cm]{\textrightarrow} corner\par
+
+!! Not invariant to scaling !!
+
+\subsubsection*{USAN/SUSAN}
+
+MSER (Maximally Stable Extremal Regions) \makebox[0.5cm]{\textrightarrow} Blob detector \makebox[0.5cm]{\textrightarrow} apply a series of threshold 
+
+\subsubsection*{SIFT}
+features are local \makebox[0.5cm]{\textrightarrow} robust to occlusion \\
+approximating LoG using DoG
+
+\medskip
+
+Steps: \\
+Keypoint localization
+\begin{itemize}
+    \item[-] Interpolation of nearby data for accurate position \makebox[0.5cm]{\textrightarrow} The interpolation is done using the 
+		quadratic Taylor expansion D(x) of the Difference-of-Gaussian scale-space function
+    \item[-] Discarding low contrast (low gradient) keypoints \makebox[0.5cm]{\textrightarrow} using the value of the second-order Taylor expansion D(x)
+    \item[-] Discard edge points \makebox[0.5cm]{\textrightarrow} eigenvalues 
+\end{itemize}
+\medskip
+Keypoints orientation \\
+
+Each keypoint comes with its scale \\
+The gaussian smoothed image closest to that scale is selected, called L
+
+\medskip
+
+Descriptor calculation \\
+In the image L corresponding to the keypoint scale \\
+Considering coordinates that are rotated based on the measure keypoint orientation
+
+\subsubsection*{SIFT PCA}
+maximizes variance \\
+minimizes mean squared distance \\
+from 3042 to 36
+
+\subsubsection*{SURF}
+speed up computations by fast approximation of Hessian matrix \makebox[0.5cm]{\textrightarrow} Integral image \makebox[0.5cm]{\textrightarrow} Box filters \\
+Orientation \makebox[0.5cm]{\textrightarrow} Evaluate gradients in x and y using the Haar wavelets (again type of box filter) 
+	    \makebox[0.5cm]{\textrightarrow} quantize bins of 60*
+Descriptor \makebox[0.5cm]{\textrightarrow} considero 16 regioni, ma 4 elementi per region 
+
+\subsubsection*{SIFT}
+Descriptor \makebox[0.5cm]{\textrightarrow} considero 16 regioni, ma 8 histogram value per region \makebox[0.5cm]{\textrightarrow} values weighted gaussian function
+
+
+\subsubsection*{FEATURE MATCHING}
+\begin{itemize}
+    \item[-] Matching strategy \makebox[0.5cm]{\textrightarrow} what features to compare? \par
+    \makebox[3.5cm]{\textrightarrow} Brute force (BF) matcher (all)\par
+    \makebox[3.5cm]{\textrightarrow} threshold on maximum distance (more than one)\par
+    \makebox[3.5cm]{\textrightarrow} Nearest Neighbor (NN) (in general one)\par
+    \makebox[3.5cm]{\textrightarrow} Nearest Neighbor Distance Ratio (NNDR)\par
+    \item[-] Match evaluation \makebox[0.5cm]{\textrightarrow} assign a value to the match \makebox[0.5cm]{\textrightarrow} Euclidean distance or Hamming distance
+    \item[-] Match performance \makebox[0.5cm]{\textrightarrow} Precision and Recall \makebox[0.5cm]{\textrightarrow} use of:	 True positives, True negatives, False positives, False negatives
+\end{itemize}
+ 
+
+
+\subsubsection*{DESCRIPTOR ALGORITHMS, OTHER APPROACHES:}
+
+\begin{itemize}
+    \item[-] GLOH \makebox[0.5cm]{\textrightarrow} log polar location grid
+    \item[-] Shape context
+    \item[-] Localy Binary Pattern (LBP)
+    \item[-] Brief \par
+    \makebox[1.0cm]{\textrightarrow} not rotation invariance \par
+    \makebox[1.0cm]{\textrightarrow} consider random point in the neighborhood \makebox[0.5cm]{\textrightarrow} compared using the Hamming distance (XOR)\par
+\end{itemize}
+
+
+\subsubsection*{DETECTOR ALGORITHMS}
+FAST \makebox[0.5cm]{\textrightarrow} no orientation component and no multiscale features \\
+ORB (Oriented FAST and Rotated BRIEF) \par
+    \makebox[1.5cm]{\textrightarrow} rotated BRIEF introduces rotation invariance \makebox[0.5cm]{\textrightarrow} orientation assignment based on the centroid\par
+    \makebox[1.5cm]{\textrightarrow} intensity wrt the central pixel (in general they don't coincide)\par
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{IMAGE RESAMPLING}
+
+Image resampling \par
+    \makebox[1.5cm]{\textrightarrow}  change the image resolution\par
+    \makebox[1.5cm]{\textrightarrow}  Decimation: smaller image\par
+    \makebox[1.5cm]{\textrightarrow}  Interpolation: larger image \par
+        \makebox[3.5cm]{-} Nearest neighbor interpolation \makebox[0.5cm]{\textrightarrow} closest pixel\par
+        \makebox[3.5cm]{-} Bilinear interpolation \makebox[0.5cm]{\textrightarrow} closest 4 samples\par
+        \makebox[3.5cm]{-} Bicubic interpolation	\makebox[0.5cm]{\textrightarrow} 16 closest samples\par
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{OBJECT DETECTION}
+
+Viola Jones algorithm \makebox[0.5cm]{\textrightarrow} Haar cascade classifier (in particular detection on faces)
+
+\end{document}
